@@ -52,6 +52,14 @@ Add images to existing drafts. This interface is used to add image materials to 
 | height | number | ✅ | - | Image height (pixels) |
 | start | number | ✅ | - | Image start display time (microseconds) |
 | end | number | ✅ | - | Image end display time (microseconds) |
+| in_animation | string | ❌ | - | Entrance animation name (can be fetched from `get_image_animations`) |
+| in_animation_duration | number | ❌ | - | Entrance animation duration (microseconds) |
+| out_animation | string | ❌ | - | Exit animation name (can be fetched from `get_image_animations`) |
+| out_animation_duration | number | ❌ | - | Exit animation duration (microseconds) |
+| loop_animation | string | ❌ | - | Loop animation name (can be fetched from `get_image_animations`) |
+| loop_animation_duration | number | ❌ | - | Loop animation duration (microseconds) |
+| transition | string | ❌ | - | Transition name |
+| transition_duration | number | ❌ | 500000 | Transition duration (microseconds, valid range 100000-2500000) |
 
 ### Parameter Details
 

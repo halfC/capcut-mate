@@ -22,7 +22,8 @@ Get image entrance/exit animation list, returning all supported and qualified im
 ```json
 {
   "mode": 0,
-  "type": "in"
+  "type": "in",
+  "keyword": "fade"
 }
 ```
 
@@ -32,6 +33,7 @@ Get image entrance/exit animation list, returning all supported and qualified im
 |-----------|------|----------|---------|-------------|
 | mode | integer |❌ | 0 | Animation mode: 0=all, 1=VIP, 2=free |
 | type | string |✅ | - | Animation type: in=entrance, out=exit, loop=loop |
+| keyword | string |❌ | - | Animation name keyword (case-insensitive) |
 
 ### Parameter Details
 
@@ -87,7 +89,8 @@ Get image entrance/exit animation list, returning all supported and qualified im
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": false
     }
   ]
 }
@@ -117,6 +120,7 @@ Get image entrance/exit animation list, returning all supported and qualified im
 | panel | string | Panel information |
 | path | string | Path information |
 | platform | string | Supported platform (usually "all") |
+| is_vip | boolean | Whether this animation requires VIP |
 
 ### Error Response (4xx/5xx)
 

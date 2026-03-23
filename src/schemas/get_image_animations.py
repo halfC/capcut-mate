@@ -1,7 +1,7 @@
 """
 获取图片出入场动画的数据模型定义
 """
-from typing import Literal, List, Dict, Any
+from typing import Literal, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -9,6 +9,7 @@ class GetImageAnimationsRequest(BaseModel):
     """获取图片出入场动画的请求模型"""
     mode: int = Field(default=0, description="动画模式：0=所有，1=VIP，2=免费")
     type: Literal["in", "out", "loop"] = Field(..., description="动画类型：in=入场，out=出场，loop=循环")
+    keyword: Optional[str] = Field(default=None, description="动画名称关键字（可选，大小写不敏感）")
 
 
 class ImageAnimationItem(BaseModel):
@@ -27,6 +28,7 @@ class ImageAnimationItem(BaseModel):
     panel: str = Field(default="", description="面板信息")
     path: str = Field(default="", description="路径信息")
     platform: str = Field(default="all", description="支持平台")
+    is_vip: bool = Field(..., description="是否为VIP动画")
 
 
 class GetImageAnimationsResponse(BaseModel):

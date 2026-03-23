@@ -360,7 +360,8 @@ def get_image_animations(giar: GetImageAnimationsRequest) -> GetImageAnimationsR
     # 调用 service 层处理业务逻辑
     effects = service.get_image_animations(
         mode=giar.mode,
-        type=giar.type
+        type=giar.type,
+        keyword=giar.keyword
     )
 
     # 直接返回对象数组，Pydantic 会自动处理序列化
