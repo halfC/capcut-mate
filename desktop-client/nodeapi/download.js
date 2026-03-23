@@ -409,10 +409,13 @@ async function downloadNotJsonFile(
     );
 
     // 创建可写流
-    const writer = response.data.pipe(createWriteStream(filePath));
+    // 显式指定 flags 和 mode，避免 Windows 下文件句柄共享模式异常
+    const writer = response.data.pipe(createWriteStream(filePath, { flags: "w", mode: 0o666 }));
 
     return new Promise((resolve, reject) => {
-      writer.on("finish", resolve);
+      // 监听 close 而非 finish：finish 仅表示数据写完，close 才表示文件句柄已释放
+      // 在 Windows 上，句柄未释放时其他进程访问该文件会出现权限异常（EACCES）
+      writer.on("close", resolve);
       writer.on("error", (err) => {
         // 尝试删除可能不完整的文件
         fs.unlink(filePath).catch(() => { });
@@ -444,6 +447,76 @@ async function downloadSingleFile(config, parentWindow) {
   } else {
     logger.info(`[log] start download non-json file : ${filePath}`);
     await downloadNotJsonFile(config, parentWindow);
+  }
+}
+
+/**
+ * 触发目录扫描，激活剪映的目录发现机制
+ * 原理：将草稿目录复制到临时目录，触发文件系统变更通知，让剪映无需重启即可感知到新草稿
+ * - Windows：使用 robocopy（内置工具，返回码 0-7 均为成功）
+ * - macOS：使用 rsync（触发 FSEvents 变更通知）
+ * @param {string} targetDir 草稿目录路径
+ */
+async function triggerDirectoryScan(targetDir) {
+  if (!targetDir) return;
+
+  try {
+    await fs.access(targetDir);
+  } catch {
+    // 目录不存在则跳过
+    return;
+  }
+
+  const tmpDir = targetDir + ".tmp";
+  const { execFile } = require("child_process");
+  const platform = process.platform;
+
+  await new Promise((resolve) => {
+    if (platform === "win32") {
+      // Windows：使用 robocopy 触发 ReadDirectoryChangesW 通知
+      const args = [
+        targetDir,
+        tmpDir,
+        "/E",        // 递归复制所有子目录
+        "/COPY:DAT", // 复制数据、属性和时间戳（无需管理员权限）
+        "/R:1",      // 失败重试1次
+        "/W:1",      // 重试等待1秒
+        "/NP",       // 不显示进度百分比
+        "/NJH",      // 不显示作业头
+        "/NJS",      // 不显示作业摘要
+      ];
+      execFile("robocopy", args, { windowsHide: true }, (err) => {
+        // robocopy 返回码 0-7 均表示成功或正常状态，8+ 才是错误
+        const code = err ? err.code : 0;
+        if (typeof code === "number" && code >= 8) {
+          logger.warn(`[scan] Windows 触发目录扫描失败，robocopy 返回码: ${code}`);
+        } else {
+          logger.info(`[scan] Windows 触发目录扫描完成，robocopy 返回码: ${code}`);
+        }
+        resolve();
+      });
+    } else if (platform === "darwin") {
+      // macOS：使用 rsync 触发 FSEvents 变更通知
+      // -a: 归档模式（递归+保留属性），触发目录写入事件
+      execFile("rsync", ["-a", targetDir + "/", tmpDir], (err) => {
+        if (err) {
+          logger.warn(`[scan] macOS 触发目录扫描失败: ${err.message}`);
+        } else {
+          logger.info(`[scan] macOS 触发目录扫描完成`);
+        }
+        resolve();
+      });
+    } else {
+      logger.info(`[scan] 当前平台 ${platform} 不支持触发目录扫描，跳过`);
+      resolve();
+    }
+  });
+
+  // 清理临时目录
+  try {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  } catch (e) {
+    logger.warn(`[scan] 清理临时目录失败 ${tmpDir}: ${e.message}`);
   }
 }
 
@@ -633,6 +706,10 @@ async function downloadFiles(
     });
     const jointPath = path.join(baseTargetDir, targetId);
     logger.info(`[finish] all download: ${jointPath}`);
+
+    // 触发剪映目录扫描，使剪映无需重启即可识别新草稿
+    await triggerDirectoryScan(jointPath);
+
     if (isOpenDir) await openDraftDirectory(jointPath);
     
     return {

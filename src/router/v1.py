@@ -7,6 +7,7 @@ from src.schemas.add_sticker import AddStickerResponse
 from src.schemas.add_keyframes import AddKeyframesResponse
 from src.schemas.add_captions import AddCaptionsResponse
 from src.schemas.add_effects import AddEffectsResponse
+from src.schemas.add_filters import AddFiltersResponse
 from src.schemas.add_masks import AddMasksResponse
 from src.schemas.add_text_style import AddTextStyleResponse
 from src.schemas.get_text_animations import GetTextAnimationsResponse
@@ -23,6 +24,7 @@ from src.schemas.add_sticker import AddStickerRequest, AddStickerResponse
 from src.schemas.add_keyframes import AddKeyframesRequest, AddKeyframesResponse
 from src.schemas.add_captions import AddCaptionsRequest, AddCaptionsResponse
 from src.schemas.add_effects import AddEffectsRequest, AddEffectsResponse
+from src.schemas.add_filters import AddFiltersRequest, AddFiltersResponse
 from src.schemas.add_masks import AddMasksRequest, AddMasksResponse
 from src.schemas.add_text_style import AddTextStyleRequest, AddTextStyleResponse
 from src.schemas.get_text_animations import GetTextAnimationsRequest, GetTextAnimationsResponse
@@ -39,6 +41,9 @@ from src.schemas.audio_infos import AudioInfosRequest, AudioInfosResponse
 from src.schemas.imgs_infos import ImgsInfosRequest, ImgsInfosResponse
 from src.schemas.caption_infos import CaptionInfosRequest, CaptionInfosResponse
 from src.schemas.effect_infos import EffectInfosRequest, EffectInfosResponse
+from src.schemas.filter_infos import FilterInfosRequest, FilterInfosResponse
+from src.schemas.get_filters import GetFiltersRequest, GetFiltersResponse
+from src.schemas.get_effects import GetEffectsRequest, GetEffectsResponse
 from src.schemas.keyframes_infos import KeyframesInfosRequest, KeyframesInfosResponse
 from src.schemas.video_infos import VideoInfosRequest, VideoInfosResponse
 from src.schemas.search_sticker import SearchStickerRequest, SearchStickerResponse
@@ -90,6 +95,7 @@ def add_videos(avr: AddVideosRequest) -> AddVideosResponse:
     draft_url, track_id, video_ids, segment_ids = service.add_videos(
         draft_url=avr.draft_url,
         video_infos=avr.video_infos,
+        scene_timelines=[{"start": t.start, "end": t.end} for t in avr.scene_timelines] if avr.scene_timelines else None,
         alpha=avr.alpha,
         scale_x=avr.scale_x,
         scale_y=avr.scale_y,
@@ -240,6 +246,25 @@ def add_effects(aer: AddEffectsRequest) -> AddEffectsResponse:
         segment_ids=segment_ids
     )
 
+@router.post(path="/add_filters", response_model=AddFiltersResponse)
+def add_filters(afr: AddFiltersRequest) -> AddFiltersResponse:
+    """
+    向剪映草稿添加滤镜 (v1版本)
+    """
+
+    # 调用service层处理业务逻辑
+    draft_url, track_id, filter_ids, segment_ids = service.add_filters(
+        draft_url=afr.draft_url,
+        filter_infos=afr.filter_infos
+    )
+
+    return AddFiltersResponse(
+        draft_url=draft_url,
+        track_id=track_id,
+        filter_ids=filter_ids,
+        segment_ids=segment_ids
+    )
+
 @router.post(path="/add_masks", response_model=AddMasksResponse)
 def add_masks(amr: AddMasksRequest) -> AddMasksResponse:
     """
@@ -329,17 +354,49 @@ def get_text_animations(gtar: GetTextAnimationsRequest) -> GetTextAnimationsResp
 @router.post(path="/get_image_animations", response_model=GetImageAnimationsResponse)
 def get_image_animations(giar: GetImageAnimationsRequest) -> GetImageAnimationsResponse:
     """
-    获取图片出入场动画 (v1版本)
+    获取图片出入场动画 (v1 版本)
     """
 
-    # 调用service层处理业务逻辑
+    # 调用 service 层处理业务逻辑
     effects = service.get_image_animations(
         mode=giar.mode,
         type=giar.type
     )
 
-    # 直接返回对象数组，Pydantic会自动处理序列化
+    # 直接返回对象数组，Pydantic 会自动处理序列化
     return GetImageAnimationsResponse(
+        effects=effects
+    )
+
+@router.post(path="/get_filters", response_model=GetFiltersResponse)
+def get_filters(gfr: GetFiltersRequest) -> GetFiltersResponse:
+    """
+    获取滤镜列表 (v1 版本)
+    """
+
+    # 调用 service 层处理业务逻辑
+    filters = service.get_filters(
+        mode=gfr.mode
+    )
+
+    # 直接返回对象数组，Pydantic 会自动处理序列化
+    return GetFiltersResponse(
+        filters=filters
+    )
+
+@router.post(path="/get_effects", response_model=GetEffectsResponse)
+def get_effects(ger: GetEffectsRequest) -> GetEffectsResponse:
+    """
+    获取特效列表 (v1 版本)
+    """
+
+    # 调用 service 层处理业务逻辑
+    effects = service.get_effects(
+        mode=ger.mode
+    )
+
+    # 直接返回对象数组，Pydantic 会自动处理序列化
+    return GetEffectsResponse(
         effects=effects
     )
 
@@ -490,6 +547,7 @@ def caption_infos(request: CaptionInfosRequest) -> CaptionInfosResponse:
         timelines=[{"start": t.start, "end": t.end} for t in request.timelines],
         font_size=request.font_size,
         keyword_color=request.keyword_color,
+        keyword_border_color=request.keyword_border_color,
         keyword_font_size=request.keyword_font_size,
         keywords=request.keywords,
         in_animation=request.in_animation,
@@ -519,6 +577,23 @@ def effect_infos(request: EffectInfosRequest) -> EffectInfosResponse:
     )
     
     return EffectInfosResponse(infos=infos_json)
+
+
+@router.post(path="/filter_infos", response_model=FilterInfosResponse)
+def filter_infos(request: FilterInfosRequest) -> FilterInfosResponse:
+    """
+    根据滤镜名称、时间线和强度生成滤镜信息 (v1版本)
+    """
+    logger.info("Received request to generate filter infos")
+    
+    # 调用service层处理业务逻辑
+    infos_json = service.filter_infos(
+        filters=request.filters,
+        timelines=[{"start": t.start, "end": t.end} for t in request.timelines],
+        intensities=request.intensities
+    )
+    
+    return FilterInfosResponse(infos=infos_json)
 
 
 @router.post(path="/keyframes_infos", response_model=KeyframesInfosResponse)
