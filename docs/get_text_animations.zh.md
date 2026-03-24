@@ -1,7 +1,7 @@
 # GET_TEXT_ANIMATIONS API 接口文档
 
 ## 🌐 语言切换
-[中文版](./add_audios.zh.md) | [English](./add_audios.md)
+[中文版](./get_text_animations.zh.md) | [English](./get_text_animations.md)
 
 ## 接口信息
 
@@ -22,7 +22,8 @@ POST /openapi/capcut-mate/v1/get_text_animations
 ```json
 {
   "mode": 0,
-  "type": "in"
+  "type": "in",
+  "keyword": "打字"
 }
 ```
 
@@ -32,6 +33,7 @@ POST /openapi/capcut-mate/v1/get_text_animations
 |--------|------|------|--------|------|
 | mode | integer | ❌ | 0 | 动画模式：0=所有，1=VIP，2=免费 |
 | type | string | ✅ | - | 动画类型：in=入场，out=出场，loop=循环 |
+| keyword | string | ❌ | - | 动画名称关键字（大小写不敏感） |
 
 ### 参数详解
 
@@ -87,7 +89,8 @@ POST /openapi/capcut-mate/v1/get_text_animations
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": true
     },
     {
       "resource_id": "7397306443147252233",
@@ -103,7 +106,8 @@ POST /openapi/capcut-mate/v1/get_text_animations
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": false
     }
   ]
 }
@@ -135,6 +139,7 @@ POST /openapi/capcut-mate/v1/get_text_animations
 | panel | string | 面板信息 |
 | path | string | 路径信息 |
 | platform | string | 支持平台（通常为"all"） |
+| is_vip | boolean | 是否为VIP动画 |
 
 ### 错误响应 (4xx/5xx)
 
@@ -196,7 +201,7 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/get_text_anima
 2. **动画类型**: type参数只能是"in"、"out"、"loop"中的一个
 3. **动画模式**: mode参数只能是0、1、2中的一个
 4. **响应格式**: 与旧版本不同，当前版本直接返回对象数组而非JSON字符串
-5. **数据来源**: 当前使用模拟数据，生产环境中应从数据库或API获取
+5. **数据来源**: 当前直接使用项目内置动画元数据（与 `add_captions` 可用动画一致）
 
 ## 工作流程
 

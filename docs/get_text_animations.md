@@ -22,7 +22,8 @@ Get text entrance/exit animation list, returning all supported and qualified tex
 ```json
 {
   "mode": 0,
-  "type": "in"
+  "type": "in",
+  "keyword": "fade"
 }
 ```
 
@@ -32,6 +33,7 @@ Get text entrance/exit animation list, returning all supported and qualified tex
 |-----------|------|----------|---------|-------------|
 | mode | integer |❌ | 0 | Animation mode: 0=all, 1=VIP, 2=free |
 | type | string |✅ | - | Animation type: in=entrance, out=exit, loop=loop |
+| keyword | string |❌ | - | Animation name keyword (case-insensitive) |
 
 ### Parameter Details
 
@@ -87,7 +89,8 @@ Get text entrance/exit animation list, returning all supported and qualified tex
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": false
     },
     {
       "resource_id": "7397306443147252233",
@@ -103,7 +106,8 @@ Get text entrance/exit animation list, returning all supported and qualified tex
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": true
     }
   ]
 }
@@ -135,6 +139,7 @@ Each animation object contains the following fields:
 | panel | string | Panel information |
 | path | string | Path information |
 | platform | string | Supported platform (usually "all") |
+| is_vip | boolean | Whether this animation requires VIP |
 
 ### Error Response (4xx/5xx)
 
@@ -196,7 +201,7 @@ curl -X POST https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/get_text_anima
 2. **Animation Types**: type parameter can only be one of "in", "out", "loop"
 3. **Animation Modes**: mode parameter can only be one of 0, 1, 2
 4. **Response Format**: Different from old version, current version directly returns object array instead of JSON string
-5. **Data Source**: Currently using mock data, in production environment should get from database or API
+5. **Data Source**: Built from project metadata enums to keep names consistent with `add_captions`
 
 ## Workflow
 
