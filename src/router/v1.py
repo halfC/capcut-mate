@@ -343,7 +343,8 @@ def get_text_animations(gtar: GetTextAnimationsRequest) -> GetTextAnimationsResp
     # 调用service层处理业务逻辑
     effects = service.get_text_animations(
         mode=gtar.mode,
-        type=gtar.type
+        type=gtar.type,
+        keyword=gtar.keyword
     )
 
     # 直接返回对象数组，Pydantic会自动处理序列化
