@@ -52,6 +52,14 @@ POST /openapi/capcut-mate/v1/add_images
 | height | number | ✅ | - | 图片高度(像素) |
 | start | number | ✅ | - | 图片开始显示时间(微秒) |
 | end | number | ✅ | - | 图片结束显示时间(微秒) |
+| in_animation | string | ❌ | - | 入场动画名称（可通过`get_image_animations`获取） |
+| in_animation_duration | number | ❌ | - | 入场动画时长(微秒) |
+| out_animation | string | ❌ | - | 出场动画名称（可通过`get_image_animations`获取） |
+| out_animation_duration | number | ❌ | - | 出场动画时长(微秒) |
+| loop_animation | string | ❌ | - | 循环动画名称（可通过`get_image_animations`获取） |
+| loop_animation_duration | number | ❌ | - | 循环动画时长(微秒) |
+| transition | string | ❌ | - | 转场名称（可通过转场元数据选择） |
+| transition_duration | number | ❌ | 500000 | 转场时长(微秒，范围100000-2500000) |
 
 ### 参数详解
 

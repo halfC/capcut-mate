@@ -1,7 +1,7 @@
 # GET_IMAGE_ANIMATIONS API 接口文档
 
 ## 🌐 语言切换
-[中文版](./add_audios.zh.md) | [English](./add_audios.md)
+[中文版](./get_image_animations.zh.md) | [English](./get_image_animations.md)
 
 ## 接口信息
 
@@ -22,7 +22,8 @@ POST /openapi/capcut-mate/v1/get_image_animations
 ```json
 {
   "mode": 0,
-  "type": "in"
+  "type": "in",
+  "keyword": "渐"
 }
 ```
 
@@ -32,6 +33,7 @@ POST /openapi/capcut-mate/v1/get_image_animations
 |--------|------|------|--------|------|
 | mode | integer | ❌ | 0 | 动画模式：0=所有，1=VIP，2=免费 |
 | type | string | ✅ | - | 动画类型：in=入场，out=出场，loop=循环 |
+| keyword | string | ❌ | - | 动画名称关键字（大小写不敏感） |
 
 ### 参数详解
 
@@ -87,7 +89,8 @@ POST /openapi/capcut-mate/v1/get_image_animations
       "material_type": "sticker",
       "panel": "",
       "path": "",
-      "platform": "all"
+      "platform": "all",
+      "is_vip": false
     }
   ]
 }
@@ -117,6 +120,7 @@ POST /openapi/capcut-mate/v1/get_image_animations
 | panel | string | 面板信息 |
 | path | string | 路径信息 |
 | platform | string | 支持平台（通常为"all"） |
+| is_vip | boolean | 是否为VIP动画 |
 
 ### 错误响应 (4xx/5xx)
 
