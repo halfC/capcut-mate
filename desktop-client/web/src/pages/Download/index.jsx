@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
+import { Modal, Button } from "react-bootstrap";
 import electronService from "../../services/electronService";
 import ExternalWebpage from "../../components/ExternalWebpage";
 import Textarea from "../../components/Textarea";
@@ -10,11 +11,14 @@ import LogModule from "../../components/LogModule";
 
 import "./index.css";
 
+const SPRING_FESTIVAL_POPUP_STORAGE_KEY = "springFestivalPopupDismissed-2026";
+
 function MainPage() {
   const [textareaValue, setTextareaValue] = useState("");
   const [isDownloadOpen, setIsDownloadOpen] = useState(true);
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSpringFestivalPopup, setShowSpringFestivalPopup] = useState(false);
 
   // 外层容器的ref，用于实现自动滚动
   const downloadPageRef = useRef(null);
@@ -41,6 +45,28 @@ function MainPage() {
       downloadPageRef.current.scrollTop = downloadPageRef.current.scrollHeight;
     }
   }, [logs]);
+
+  // AI-GEN-BEGIN
+  useEffect(() => {
+    try {
+      const hasDismissedPopup = localStorage.getItem(
+        SPRING_FESTIVAL_POPUP_STORAGE_KEY
+      );
+      setShowSpringFestivalPopup(hasDismissedPopup !== "true");
+    } catch (error) {
+      setShowSpringFestivalPopup(true);
+    }
+  }, []);
+
+  const closeSpringFestivalPopup = () => {
+    setShowSpringFestivalPopup(false);
+    try {
+      localStorage.setItem(SPRING_FESTIVAL_POPUP_STORAGE_KEY, "true");
+    } catch (error) {
+      console.error("保存新春弹窗状态失败:", error);
+    }
+  };
+  // AI-GEN-END
 
   const handleDownload = async () => {
     if (!textareaValue) {
@@ -103,6 +129,37 @@ function MainPage() {
   return (
     <div className="download-page" ref={downloadPageRef}>
       <div className="container">
+        {/* AI-GEN-BEGIN */}
+        <Modal
+          show={showSpringFestivalPopup}
+          onHide={closeSpringFestivalPopup}
+          centered
+          className="spring-festival-modal"
+        >
+          <Modal.Header closeButton className="spring-festival-modal-header">
+            <Modal.Title>2026 新春欢迎</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="spring-festival-modal-body">
+            <h4 className="spring-festival-title">新岁启封，万事可期</h4>
+            <p className="spring-festival-message">
+              欢迎来到剪映小助手，祝你在 2026 年创作顺利、灵感满满！
+            </p>
+            <p className="spring-festival-message">
+              愿你的每一个作品都精彩上线，收获更多喜欢与关注。
+            </p>
+          </Modal.Body>
+          <Modal.Footer className="spring-festival-modal-footer">
+            <Button
+              variant="danger"
+              className="spring-festival-confirm-btn"
+              onClick={closeSpringFestivalPopup}
+            >
+              开始使用
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        {/* AI-GEN-END */}
+
         <ExternalWebpage />
 
         <Textarea
