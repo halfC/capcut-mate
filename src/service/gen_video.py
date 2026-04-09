@@ -2,25 +2,26 @@ from src.utils.logger import logger
 from src.utils.video_task_manager import task_manager
 from src.utils.points import get_user_points
 from exceptions import CustomException, CustomError
-from typing import Tuple
 import config
 
 
 def gen_video(draft_url: str, apiKey: str = None) -> str:
     """
-    提交视频生成任务（异步处理）
-    
+    提交视频生成任务（异步处理）。
+
+    队列内多个任务的草稿下载、COS 上传可并行；剪映 RPA 导出仍全局串行，业务结果与重构前一致。
+
     Args:
         draft_url: 草稿URL
         apiKey: 可选的API密钥，必须是合法的UUID格式，可以为空
-    
+
     Returns:
         message: 响应消息
     """
     logger.info(f"gen_video called with draft_url: {draft_url}, apiKey provided: {apiKey is not None}")
     
     try:
-        if config.ENABLE_APIKEY == "true":
+        if config.ENABLE_APIKEY:
             if apiKey == "": # 开启API密钥验证
                 raise CustomException(CustomError.INVALID_APIKEY)
 
@@ -131,3 +132,8 @@ def get_task_status_info(draft_url: str) -> dict:
         raise CustomException(CustomError.VIDEO_TASK_NOT_FOUND)
     
     return status_info
+
+
+def get_gen_video_active_count() -> int:
+    """返回当前排队中 + 渲染中的云渲染草稿数量（不含已完成/失败）。"""
+    return task_manager.get_active_render_count()

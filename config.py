@@ -23,6 +23,9 @@ TIP_URL = os.getenv("TIP_URL", "https://docs.jcaigc.cn/")
 # 贴纸配置文件路径
 STICKER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "sticker.json")
 
+# 花字配置文件路径
+HUAZI_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "huazi.json")
+
 # 模板目录路径
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "template")
 
@@ -36,8 +39,8 @@ COS_SECRET_KEY = os.getenv("COS_SECRET_KEY", "xxx")
 COS_BUCKET_NAME = os.getenv("COS_BUCKET_NAME", "xxx")
 COS_REGION = os.getenv("COS_REGION", "xxx")
 
-# APIKEY启用配置-默认启用 -- 云渲染必需配置
-ENABLE_APIKEY = os.getenv("ENABLE_APIKEY", "true")
+# APIKEY启用配置-默认启用 -- 云渲染必需配置（环境变量 true / false，大小写不敏感）
+ENABLE_APIKEY = os.getenv("ENABLE_APIKEY", "false").strip().lower() == "true"
 
 # 文件下载大小限制（字节），默认200MB
 DOWNLOAD_FILE_SIZE_LIMIT = int(os.getenv("DOWNLOAD_FILE_SIZE_LIMIT", str(200 * 1024 * 1024)))

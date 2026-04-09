@@ -14,7 +14,7 @@ from .time_util import Timerange, tim, srt_tstamp
 from .local_materials import VideoMaterial, AudioMaterial
 from .segment import BaseSegment, Speed, ClipSettings
 from .audio_segment import AudioSegment, AudioFade, AudioEffect
-from .video_segment import VideoSegment, StickerSegment, SegmentAnimations, VideoEffect, Transition, Filter, BackgroundFilling
+from .video_segment import VideoSegment, StickerSegment, SegmentAnimations, VideoEffect, Transition, Filter, BackgroundFilling, MixMode
 from .effect_segment import EffectSegment, FilterSegment
 from .text_segment import TextSegment, TextStyle, TextBubble
 from .track import TrackType, BaseTrack, Track
@@ -50,6 +50,8 @@ class ScriptMaterial:
     """转场效果列表"""
     filters: List[Union[Filter, TextBubble]]
     """滤镜/文本花字/文本气泡列表, 导出到`effects`中"""
+    mix_modes: List[MixMode]
+    """混合模式列表, 导出到`effects`中"""
     canvases: List[BackgroundFilling]
     """背景填充列表"""
 
@@ -68,6 +70,7 @@ class ScriptMaterial:
         self.masks = []
         self.transitions = []
         self.filters = []
+        self.mix_modes = []
         self.canvases = []
 
     @overload
@@ -94,6 +97,8 @@ class ScriptMaterial:
             return item.global_id in [transition.global_id for transition in self.transitions]
         elif isinstance(item, Filter):
             return item.global_id in [filter_.global_id for filter_ in self.filters]
+        elif isinstance(item, MixMode):
+            return item.global_id in [mix_mode.global_id for mix_mode in self.mix_modes]
         else:
             raise TypeError("Invalid argument type '%s'" % type(item))
 
@@ -111,7 +116,7 @@ class ScriptMaterial:
             "color_curves": [],
             "digital_humans": [],
             "drafts": [],
-            "effects": [_filter.export_json() for _filter in self.filters],
+            "effects": [_filter.export_json() for _filter in self.filters] + [mix_mode.export_json() for mix_mode in self.mix_modes],
             "flowers": [],
             "green_screens": [],
             "handwrites": [],
@@ -163,6 +168,9 @@ class ScriptFile:
     duration: int
     """视频的总时长, 单位为微秒"""
 
+    maintrack_adsorb: bool
+    """是否启用主轨道吸附（主轨磁吸）"""
+
     materials: ScriptMaterial
     """草稿文件中的素材信息部分"""
     tracks: Dict[str, Track]
@@ -173,27 +181,33 @@ class ScriptFile:
     imported_tracks: List[ImportedTrack]
     """导入的轨道信息"""
 
-    def __init__(self, width: int, height: int, fps: int = 30):
+    dual_file_compatibility: bool
+    """双文件兼容模式，启用时同时保存到 draft_content.json 和 draft_info.json"""
+
+    def __init__(self, width: int, height: int, fps: int, maintrack_adsorb: bool):
         """**创建剪映草稿推荐使用`DraftFolder.create_draft()`而非此方法**
 
         Args:
             width (int): 视频宽度, 单位为像素
             height (int): 视频高度, 单位为像素
-            fps (int, optional): 视频帧率. 默认为30.
+            fps (int): 视频帧率
+            maintrack_adsorb (bool): 是否启用主轨道吸附（主轨磁吸）
         """
         self.save_path = None
-        self.dual_file_compatibility = False  # 控制是否同时保存两个文件
 
         self.width = width
         self.height = height
         self.fps = fps
         self.duration = 0
+        self.maintrack_adsorb = maintrack_adsorb
 
         self.materials = ScriptMaterial()
         self.tracks = {}
 
         self.imported_materials = {}
         self.imported_tracks = []
+
+        self.dual_file_compatibility = True  # 启用双文件兼容模式
 
         with open(assets.get_asset_path('DRAFT_CONTENT_TEMPLATE'), "r", encoding="utf-8") as f:
             self.content = json.load(f)
@@ -216,6 +230,7 @@ class ScriptFile:
             obj.content = json.load(f)
 
         util.assign_attr_with_json(obj, ["fps", "duration"], obj.content)
+        util.assign_attr_with_json(obj, ["maintrack_adsorb"], obj.content["config"])
         util.assign_attr_with_json(obj, ["width", "height"], obj.content["canvas_config"])
 
         obj.imported_materials = deepcopy(obj.content["materials"])
@@ -315,6 +330,10 @@ class ScriptFile:
             for filter_ in segment.filters:
                 if filter_ not in self.materials:
                     self.materials.filters.append(filter_)
+            # 混合模式
+            for mix_mode in segment.mix_modes:
+                if mix_mode not in self.materials:
+                    self.materials.mix_modes.append(mix_mode)
             # 蒙版
             if segment.mask is not None:
                 self.materials.masks.append(segment.mask.export_json())
@@ -324,6 +343,9 @@ class ScriptFile:
             # 背景填充
             if segment.background_filling is not None:
                 self.materials.canvases.append(segment.background_filling)
+            # 音频淡入淡出
+            if (segment.fade is not None) and (segment.fade not in self.materials):
+                self.materials.audio_fades.append(segment.fade)
 
             self.materials.speeds.append(segment.speed)
         elif isinstance(segment, StickerSegment):
@@ -784,6 +806,7 @@ class ScriptFile:
         """将草稿文件内容导出为JSON字符串"""
         self.content["fps"] = self.fps
         self.content["duration"] = self.duration
+        self.content["config"]["maintrack_adsorb"] = self.maintrack_adsorb
         self.content["canvas_config"] = {"width": self.width, "height": self.height, "ratio": "original"}
         self.content["materials"] = self.materials.export_json()
 
