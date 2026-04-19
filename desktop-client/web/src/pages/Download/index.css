@@ -3,6 +3,52 @@
     overflow-y: auto;
 }
 
+/* AI-GEN-BEGIN */
+.spring-festival-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(126, 27, 27, 0.25);
+}
+
+.spring-festival-modal-header {
+    background: linear-gradient(135deg, #c62828 0%, #f57c00 100%);
+    color: #fff;
+    border-bottom: none;
+}
+
+.spring-festival-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.spring-festival-modal-body {
+    background: #fff9ef;
+    color: #7a2c17;
+    padding: 24px;
+}
+
+.spring-festival-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.spring-festival-message {
+    margin-bottom: 10px;
+    line-height: 1.75;
+}
+
+.spring-festival-modal-footer {
+    background: #fff9ef;
+    border-top: none;
+}
+
+.spring-festival-confirm-btn {
+    min-width: 130px;
+    font-weight: 600;
+}
+/* AI-GEN-END */
+
 /* 外部网页样式 */
 .external-webpage-container {
     position: relative;
