@@ -95,7 +95,6 @@ docker-compose pull && docker-compose up -d
 
 After deployment, access the API documentation at: http://localhost:30000/docs
 
-<!-- AI-GEN-BEGIN -->
 If host port 80 is already in use, change `HOST_HTTP_PORT` only (see `.env.example`). Do not edit the nginx `ports` mapping by itself. `docker-compose.yaml` derives that mapping together with `DRAFT_URL` and `DOWNLOAD_URL`. Changing the mapping to `81:80` while leaving the download URLs at `http://127.0.0.1/` (port 80) makes the Windows client fail to download drafts.
 
 To publish host port 81, put this in the project `.env`:
@@ -115,7 +114,6 @@ environment:
 ```
 
 With the default `HOST_HTTP_PORT=80`, nginx is still published as `80:80`. Compose writes `http://127.0.0.1:80/`, which is the same endpoint as the previous `http://127.0.0.1/`. This codebase strips that default port, so API responses stay the same as before.
-<!-- AI-GEN-END -->
 
 ## One-Click Import Coze Plugin
 

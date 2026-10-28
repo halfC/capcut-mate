@@ -15,7 +15,6 @@ _get_draft = importlib.util.module_from_spec(_get_draft_spec)
 _get_draft_spec.loader.exec_module(_get_draft)
 gen_download_url = _get_draft.gen_download_url
 
-# AI-GEN-BEGIN
 _COMPOSE_PATH = Path(__file__).resolve().parents[1] / "docker-compose.yaml"
 _INTERPOLATION = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(:-([^}]*))?\}")
 
@@ -124,4 +123,3 @@ def test_gen_download_url_includes_non_default_host_port(monkeypatch):
     monkeypatch.setattr(config, "DOWNLOAD_URL", "http://127.0.0.1:81/")
     url = gen_download_url("/app/output/draft/abc/draft_info.json")
     assert url == "http://127.0.0.1:81/output/draft/abc/draft_info.json"
-# AI-GEN-END

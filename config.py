@@ -28,7 +28,6 @@ def strip_loopback_http_default_port(url: str) -> str:
     Returns:
         主机为 127.0.0.1 且端口恰好为 80 时去掉端口后的 URL，其它地址保持原样。
     """
-    # AI-GEN-BEGIN
     marker = "http://127.0.0.1:80"
     if not url.startswith(marker):
         return url
@@ -36,22 +35,17 @@ def strip_loopback_http_default_port(url: str) -> str:
     if rest == "" or rest[0] in "/?#":
         return "http://127.0.0.1" + rest
     return url
-    # AI-GEN-END
 
 
 # 剪映草稿的下载路径
-# AI-GEN-BEGIN
 DRAFT_URL = strip_loopback_http_default_port(
     os.getenv("DRAFT_URL", "https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/get_draft")
 )
-# AI-GEN-END
 
 # 将容器内的文件路径转成一个下载路径，执行替换操作，即将/app/ -> https://capcut-mate.jcaigc.cn/
-# AI-GEN-BEGIN
 DOWNLOAD_URL = strip_loopback_http_default_port(
     os.getenv("DOWNLOAD_URL", "https://capcut-mate.jcaigc.cn/")
 )
-# AI-GEN-END
 
 # 草稿提示URL
 TIP_URL = os.getenv("TIP_URL", "https://docs.jcaigc.cn/")

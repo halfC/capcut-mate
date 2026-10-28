@@ -95,7 +95,6 @@ docker-compose pull && docker-compose up -d
 
 部署完成后，访问 API 文档：http://localhost:30000/docs
 
-<!-- AI-GEN-BEGIN -->
 宿主机 80 端口被占用时，只改 `HOST_HTTP_PORT`（见 `.env.example`），不要单独改 `ports`。`docker-compose.yaml` 用它同时生成 nginx 映射和 `DRAFT_URL` / `DOWNLOAD_URL`。若只把映射改成 `81:80`、下载地址仍是 `http://127.0.0.1/`（默认 80），Windows 客户端无法下载草稿。
 
 映射到 81 时在项目目录 `.env` 中写入：
@@ -115,7 +114,6 @@ environment:
 ```
 
 默认 `HOST_HTTP_PORT=80` 时映射仍是 `80:80`。compose 写出的下载根地址是 `http://127.0.0.1:80/`，与原来的 `http://127.0.0.1/` 是同一端口；当前代码会去掉这个默认端口，接口返回值与旧版一致。
-<!-- AI-GEN-END -->
 
 ## 一键导入扣子插件
 
