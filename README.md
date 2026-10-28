@@ -95,6 +95,26 @@ docker-compose pull && docker-compose up -d
 
 After deployment, access the API documentation at: http://localhost:30000/docs
 
+If host port 80 is already in use, change `HOST_HTTP_PORT` only (see `.env.example`). Do not edit the nginx `ports` mapping by itself. `docker-compose.yaml` derives that mapping together with `DRAFT_URL` and `DOWNLOAD_URL`. Changing the mapping to `81:80` while leaving the download URLs at `http://127.0.0.1/` (port 80) makes the Windows client fail to download drafts.
+
+To publish host port 81, put this in the project `.env`:
+
+```bash
+HOST_HTTP_PORT=81
+```
+
+Then run `docker-compose up -d` again. Equivalent explicit settings:
+
+```yaml
+ports:
+  - "81:80"
+environment:
+  - DRAFT_URL=http://127.0.0.1:81/openapi/capcut-mate/v1/get_draft
+  - DOWNLOAD_URL=http://127.0.0.1:81/
+```
+
+With the default `HOST_HTTP_PORT=80`, nginx is still published as `80:80`. Compose writes `http://127.0.0.1:80/`, which is the same endpoint as the previous `http://127.0.0.1/`. This codebase strips that default port, so API responses stay the same as before.
+
 ## One-Click Import Coze Plugin
 
 1. Open Coze platform: https://coze.cn/home
