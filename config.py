@@ -14,11 +14,44 @@ TEMP_DIR = os.path.join(PROJECT_ROOT, "temp")
 # 视频生成任务：生成视频在 COS 上的可访问保留天数（预签名下载 URL 有效期，环境变量覆盖）
 VIDEO_GEN_RETENTION_DAYS = max(1, int(os.getenv("VIDEO_GEN_RETENTION_DAYS", "7")))
 
+
+def strip_loopback_http_default_port(url: str) -> str:
+    """去掉本机 http://127.0.0.1:80 上的默认端口。
+
+    端口 80 与省略端口指向同一地址。Docker 默认 HOST_HTTP_PORT=80 时，
+    compose 会把地址写成带 :80 的形式；这里还原成旧版字符串，避免默认部署行为变化。
+    仅匹配端口恰好为 80 的回环地址，:8080 不会被误删。
+
+    Args:
+        url: 环境变量中的 URL。空字符串原样返回。
+
+    Returns:
+        主机为 127.0.0.1 且端口恰好为 80 时去掉端口后的 URL，其它地址保持原样。
+    """
+    # AI-GEN-BEGIN
+    marker = "http://127.0.0.1:80"
+    if not url.startswith(marker):
+        return url
+    rest = url[len(marker):]
+    if rest == "" or rest[0] in "/?#":
+        return "http://127.0.0.1" + rest
+    return url
+    # AI-GEN-END
+
+
 # 剪映草稿的下载路径
-DRAFT_URL = os.getenv("DRAFT_URL", "https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/get_draft")
+# AI-GEN-BEGIN
+DRAFT_URL = strip_loopback_http_default_port(
+    os.getenv("DRAFT_URL", "https://capcut-mate.jcaigc.cn/openapi/capcut-mate/v1/get_draft")
+)
+# AI-GEN-END
 
 # 将容器内的文件路径转成一个下载路径，执行替换操作，即将/app/ -> https://capcut-mate.jcaigc.cn/
-DOWNLOAD_URL = os.getenv("DOWNLOAD_URL", "https://capcut-mate.jcaigc.cn/")
+# AI-GEN-BEGIN
+DOWNLOAD_URL = strip_loopback_http_default_port(
+    os.getenv("DOWNLOAD_URL", "https://capcut-mate.jcaigc.cn/")
+)
+# AI-GEN-END
 
 # 草稿提示URL
 TIP_URL = os.getenv("TIP_URL", "https://docs.jcaigc.cn/")
